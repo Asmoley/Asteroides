@@ -15,20 +15,23 @@ public class Laser extends VectorSprite{
     public Laser(double x, double y, double a){
         shape = new Polygon();
         shape.addPoint (0,0);
-        shape.addPoint (75,75);
+        shape.addPoint (200,0);
         shape.addPoint (1,0);
         
         drawShape = new Polygon();
         drawShape.addPoint (0,0);
-        drawShape.addPoint (75,75);
+        drawShape.addPoint (200,0);
         drawShape.addPoint (1,0);
         
-        active = false;
+        active = true;
         
         xposition = x;
         yposition = y;
         angle = a;
         amount = 3;
+        THRUST = 20;
+        xspeed = Math.cos(angle) * THRUST;
+        yspeed = Math.sin(angle) * THRUST;
     }
     
 }

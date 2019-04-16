@@ -54,10 +54,12 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         GiveLife = true;
         level += 1;
         beatLevel = false;
+        resetCounter = 0;
         NumAsteroids = level * 2;
         asteroidList = new ArrayList();
         bulletList = new ArrayList();
         debrisList = new ArrayList();
+        LaserList =  new ArrayList();
         timer = new Timer(20, this);
         offscreen = createImage(this.getWidth(), this.getHeight());
         offg = offscreen.getGraphics();
@@ -109,6 +111,12 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
             bulletList.get(i).updatePosition();
             if (bulletList.get(i).counter == 35 || bulletList.get(i).active == false || ship.active == false) {
                 bulletList.remove(i);
+            }
+        }
+        for (int i = 0; i < LaserList.size(); i++) {
+            LaserList.get(i).updatePosition();
+            if(LaserList.get(i).counter == 60){
+                LaserList.remove(i);
             }
         }
     }
@@ -254,6 +262,11 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
                 }
 
             }
+            for (int l = 0; l < LaserList.size(); l++) {
+                if (collision(LaserList.get(l),asteroidList.get(i))) {
+                    asteroidList.get(i).active = false;
+                }
+            }
 
         }
         if (collision(ship, Invulnerability) && Invulnerability.active == true && ship.active == true) {
@@ -291,9 +304,10 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         }
     }
     public void fireLaser(){
-        
-        LaserList.add(new Laser(ship.xposition,ship.yposition,ship.angle));
-        
+        if(ship.counter > 30) {
+            LaserList.add(new Laser(ship.xposition,ship.yposition,ship.angle));
+            ship.counter = 0;
+        }
     }
 
     public void checkAsteroidDestruction() {
@@ -343,8 +357,10 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
             for (int i = 0; i < debrisList.size(); i++) {
                 debrisList.get(i).paint(offg);
             }
+            for (int i = 0; i < LaserList.size(); i++) {
+                LaserList.get(i).paint(offg);
+            }
             offg.drawString("lives: " + ship.lives, 1, 10);
-
         } else {
             offg.drawString("Score: " + score, 375, 30);
             offg.setColor(Color.RED);
