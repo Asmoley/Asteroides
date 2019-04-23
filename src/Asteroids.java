@@ -24,9 +24,11 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
     int score;
     int level;
     int NumAsteroids;
+    int amount = 3;
     int resetCounter = 0;
     AudioClip explosion;
     AudioClip shoot;
+    AudioClip firingLaser;
     PowerInvulnerability Invulnerability;
 
     /**
@@ -52,6 +54,7 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         ship.Invulnerable = false;
         Invulnerability.active = true;
         GiveLife = true;
+        amount = 3;
         level += 1;
         beatLevel = false;
         resetCounter = 0;
@@ -65,6 +68,7 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         offg = offscreen.getGraphics();
         explosion = getAudioClip(getCodeBase(), "AsteroidExplosion.wav");
         shoot = getAudioClip(getCodeBase(), "Gunshot.wav");
+        firingLaser = getAudioClip(getCodeBase(), "Laser.wav");
         for (int i = 0; i < NumAsteroids; i++) {
             asteroidList.add(new Asteroid());
         }
@@ -304,8 +308,10 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         }
     }
     public void fireLaser(){
-        if(ship.counter > 30) {
+        if(ship.counter > 30 && amount > 0) {
             LaserList.add(new Laser(ship.xposition,ship.yposition,ship.angle));
+            firingLaser.play();
+            amount -= 1;
             ship.counter = 0;
         }
     }
@@ -342,6 +348,7 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         if (ship.lives > -1) {
             offg.drawString("Level: " + level, 855, 10);
             offg.drawString("Score: " + score, 450, 10);
+            offg.drawString("Lasers: " + amount, 1, 595);
             if (ship.active) {
                 ship.paint(offg);
             }

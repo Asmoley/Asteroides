@@ -11,7 +11,6 @@ import java.awt.Polygon;
  */
 
 public class Laser extends VectorSprite{
-    int amount;
     public Laser(double x, double y, double a){
         shape = new Polygon();
         shape.addPoint (0,0);
@@ -24,11 +23,9 @@ public class Laser extends VectorSprite{
         drawShape.addPoint (1,0);
         
         active = true;
-        
         xposition = x;
         yposition = y;
         angle = a;
-        amount = 3;
         THRUST = 20;
         xspeed = Math.cos(angle) * THRUST;
         yspeed = Math.sin(angle) * THRUST;
