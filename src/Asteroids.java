@@ -14,9 +14,10 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
     Graphics offg;
     Spacecraft ship;
     Timer timer;
-    boolean upKey, leftKey, rightKey, spacebar, pauseKey, LKey;
+    boolean upKey, leftKey, rightKey, spacebar, pauseKey, LKey, RKey;
     boolean GiveLife;
     boolean beatLevel = false;
+    boolean bossLevel = false;
     ArrayList<Asteroid> asteroidList;
     ArrayList<Bullet> bulletList;
     ArrayList<Debris> debrisList;
@@ -37,15 +38,18 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
      */
     public void init() {
         ship = new Spacecraft();
+        timer = new Timer(20, this);
         score = 0;
+        level = 0;
+        this.addKeyListener(this);
         resetLevel();
+        
 
     }
 
     public void resetLevel() {
         
         this.setSize(900, 600);
-        this.addKeyListener(this);
         ship.xposition = 450;
         ship.yposition = 300;
         ship.yspeed = 0;
@@ -57,13 +61,13 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         amount = 3;
         level += 1;
         beatLevel = false;
+        bossLevel = false;
         resetCounter = 0;
         NumAsteroids = level * 2;
         asteroidList = new ArrayList();
         bulletList = new ArrayList();
         debrisList = new ArrayList();
         LaserList =  new ArrayList();
-        timer = new Timer(20, this);
         offscreen = createImage(this.getWidth(), this.getHeight());
         offg = offscreen.getGraphics();
         explosion = getAudioClip(getCodeBase(), "AsteroidExplosion.wav");
@@ -73,6 +77,37 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
             asteroidList.add(new Asteroid());
         }
 
+    }
+    public void resetBossLevel(){
+        ship.xposition = 450;
+        ship.yposition = 300;
+        ship.yspeed = 0;
+        ship.xspeed = 0;
+        Invulnerability = new PowerInvulnerability();
+        ship.Invulnerable = false;
+        Invulnerability.active = true;
+        GiveLife = true;
+        amount = 3;
+        level += 1;
+        beatLevel = false;
+        bossLevel = false; 
+        resetCounter = 0;
+        asteroidList.add(new Asteroid(600,300,10));
+        bulletList = new ArrayList();
+        debrisList = new ArrayList();
+        LaserList =  new ArrayList();
+        offscreen = createImage(this.getWidth(), this.getHeight());
+        offg = offscreen.getGraphics();
+        explosion = getAudioClip(getCodeBase(), "AsteroidExplosion.wav");
+        shoot = getAudioClip(getCodeBase(), "Gunshot.wav");
+        firingLaser = getAudioClip(getCodeBase(), "Laser.wav");
+     
+    }
+    public void resetGame() {
+        level = 0;
+        score = 0;
+        ship.lives = 2;
+        resetLevel();
     }
 
     public void start() {
@@ -89,7 +124,12 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         if(beatLevel == true){
             resetCounter += 1;
         }  
-        
+        if (bossLevel == true) {
+            resetCounter += 1;
+        }
+        if(RKey == true){
+            resetGame();
+        }
         ship.updatePosition();
         Invulnerability.updatePosition();
         checkCollision();
@@ -137,9 +177,16 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
                 offg.setColor(Color.GREEN);
                 offg.drawString("New Level", 450, 300);
             }else {
-            
                 resetLevel();
             }
+        }
+        if (bossLevel == true) {
+           if (resetCounter < 150){
+                offg.setColor(Color.GREEN);
+                offg.drawString("Boss Level!!!", 450, 300);
+            }else {
+                resetBossLevel();
+            } 
         }
         if (ship.Invulnerable == true){
             offg.setColor(Color.YELLOW);
@@ -154,7 +201,7 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
     }
 
     public void update(Graphics g) {
-        paint(g);
+        paint(g);   
     }
 
     public void keyCheck() {
@@ -192,6 +239,9 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         if (e.getKeyCode() == KeyEvent.VK_L) {
             LKey = true;
         }
+        if (e.getKeyCode() == KeyEvent.VK_R) {
+            RKey = true;
+        }   
         if (e.getKeyCode() == KeyEvent.VK_P) {
             if(pauseKey == false){
                 stop();
@@ -219,6 +269,9 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         }
         if (e.getKeyCode() == KeyEvent.VK_L) {
             LKey = false;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_R) {
+            RKey = false;
         }
     }
 
@@ -336,44 +389,47 @@ public class Asteroids extends Applet implements KeyListener, ActionListener {
         }
     }
     public void paintStuff(){
-        
-        if (asteroidList.size() == 0 && level != 5) {
-            beatLevel = true;
-        }
-        if (asteroidList.size() == 0 && level == 5) {
-            ship.active = false;
-            offg.drawString("You Win", 450, 300);
-        }
-
-        if (ship.lives > -1) {
-            offg.drawString("Level: " + level, 855, 10);
-            offg.drawString("Score: " + score, 450, 10);
-            offg.drawString("Lasers: " + amount, 1, 595);
-            if (ship.active) {
+        if (RKey == false){
+            if (asteroidList.size() == 0 && level != 5) {
+                beatLevel = true;
+            }
+            if (asteroidList.size() == 0 && level == 5) {
+                bossLevel = true;
+            }
+            if (asteroidList.size() == 0 && level == 6) {
+                ship.active = false;
+                offg.drawString("You Win", 450, 300);
+            }
+            if (ship.lives > -1) {
+                offg.drawString("Level: " + level, 855, 10);
+                offg.drawString("Score: " + score, 450, 10);
+                offg.drawString("Lasers: " + amount, 1, 595);
+                if (ship.active) {
                 ship.paint(offg);
+                }
+                if (Invulnerability.active == true) {
+                Invulnerability.paint(offg);
+                }
+                for (int i = 0; i < asteroidList.size(); i++) {
+                    asteroidList.get(i).paint(offg);
+                }
+                for (int i = 0; i < bulletList.size(); i++) {
+                    bulletList.get(i).paint(offg);
+                }
+                for (int i = 0; i < debrisList.size(); i++) {
+                    debrisList.get(i).paint(offg);
+                }
+                for (int i = 0; i < LaserList.size(); i++) {
+                    LaserList.get(i).paint(offg);
+                }
+                offg.drawString("lives: " + ship.lives, 1, 10);
+            } else {
+                offg.drawString("Score: " + score, 375, 30);
+                offg.setColor(Color.RED);
+                Font bigText = new Font("Courier New", 1, 50);
+                offg.setFont(bigText);
+                offg.drawString("You Lose", 375, 300);
             }
-            if (Invulnerability.active == true) {
-            Invulnerability.paint(offg);
-            }
-            for (int i = 0; i < asteroidList.size(); i++) {
-                asteroidList.get(i).paint(offg);
-            }
-            for (int i = 0; i < bulletList.size(); i++) {
-                bulletList.get(i).paint(offg);
-            }
-            for (int i = 0; i < debrisList.size(); i++) {
-                debrisList.get(i).paint(offg);
-            }
-            for (int i = 0; i < LaserList.size(); i++) {
-                LaserList.get(i).paint(offg);
-            }
-            offg.drawString("lives: " + ship.lives, 1, 10);
-        } else {
-            offg.drawString("Score: " + score, 375, 30);
-            offg.setColor(Color.RED);
-            Font bigText = new Font("Courier New", 1, 50);
-            offg.setFont(bigText);
-            offg.drawString("You Lose", 375, 300);
         }
     }
     public void CheckBonusLife(){
